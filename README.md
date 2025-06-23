@@ -2,7 +2,7 @@
 
 ## 📋 Sobre o Projeto
 
-O **Agente de Memória** é um assistente inteligente que funciona como seu "segundo cérebro", capaz de:
+O **Agente de Memória** é um assistente inteligente que funciona como seu "assistente virtual", capaz de:
 - 🎤 Gravar áudio através do microfone
 - 📝 Transcrever sua fala usando IA (Whisper da OpenAI)
 - 🤖 Procesesar e registrar eventos do seu dia usando GPT-4
