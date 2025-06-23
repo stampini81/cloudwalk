@@ -5,7 +5,7 @@
 O **Agente de Memória** é um assistente inteligente que funciona como seu "assistente virtual", capaz de:
 - 🎤 Gravar áudio através do microfone
 - 📝 Transcrever sua fala usando IA (Whisper da OpenAI)
-- 🤖 Procesesar e registrar eventos do seu dia usando GPT-4
+- 🤖 PProcessar e registrar os eventos descritos no áudio usando GPT-4
 - 💾 Salvar tudo em uma memória persistente para consultas futuras
 
 Este projeto é perfeito para **iniciantes em Python e IA** que querem entender como integrar diferentes tecnologias de inteligência artificial.
