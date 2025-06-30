@@ -17,6 +17,37 @@ Este projeto é perfeito para **iniciantes em Python e IA** que querem entender 
 - Gerenciamento de variáveis de ambiente
 - Conceitos básicos de Agentes de IA
 
+
+## Glossário de termos mencionados no curso
+
+**Algoritmos**: Sequência de instruções organizadas e lógicas para resolver um problema específico. É como uma "receita" que o computador segue passo a passo para executar uma tarefa, desde as mais simples até as mais complexas.
+
+**Fetch**: Função usada para fazer requisições HTTP e buscar dados de servidores ou APIs. Permite que uma página web solicite informações de outros lugares na internet de forma assíncrona, sem precisar recarregar a página.
+
+**API Whisper**: Serviço de inteligência artificial da OpenAI que converte áudio em texto (transcrição). É capaz de reconhecer fala em diversos idiomas e transformar gravações de voz em texto escrito.
+
+**venv**: Ferramenta do Python que cria ambientes virtuais isolados. Permite instalar bibliotecas específicas para cada projeto sem afetar outras aplicações, mantendo as dependências organizadas e separadas.
+
+**requirements.txt**: Arquivo de texto que lista todas as bibliotecas e suas versões necessárias para um projeto Python funcionar. Facilita a instalação das dependências em outros computadores ou ambientes.
+
+**PyAudio**: Biblioteca Python que permite gravar e reproduzir áudio. É usada para capturar som do microfone ou tocar arquivos de áudio diretamente através do código Python.
+
+**Wave**: Módulo Python nativo para trabalhar com arquivos de áudio no formato WAV. Permite ler, escrever e manipular arquivos de som sem precisar instalar bibliotecas externas.
+
+**python-dotenv**: Biblioteca que carrega variáveis de ambiente a partir de um arquivo .env. É útil para manter informações sensíveis como chaves de API separadas do código principal.
+
+**OpenAI**: Biblioteca oficial da OpenAI para Python que facilita a integração com seus serviços de IA, como GPT e Whisper. Permite fazer chamadas para as APIs da empresa de forma simples.
+
+**Playsound**: Biblioteca Python simples para reproduzir arquivos de áudio. Oferece uma maneira fácil de tocar sons em aplicações sem configurações complexas.
+
+**Pydantic**: Biblioteca Python para validação de dados usando type hints. Garante que os dados estejam no formato correto e ajuda a detectar erros antes que causem problemas na aplicação.
+
+**Eventos**: Ações ou ocorrências que acontecem durante a execução de um programa, como cliques do mouse, pressionamento de teclas ou chegada de dados. O programa pode "escutar" esses eventos e reagir a eles.
+
+**LangChain**: Framework Python para desenvolver aplicações com modelos de linguagem (LLMs). Facilita a criação de chatbots, sistemas de perguntas e respostas e outras aplicações de IA conversacional.
+
+
+
 ## 🛠 Tecnologias Utilizadas
 
 - **Python 3.11+** - Linguagem principal
@@ -163,6 +194,7 @@ Para usar em inglês, altere no `main.py`:
 ```python
 language="en"  # Linha da transcrição
 ```
+
 
 ## ❌ Solução de Problemas
 
