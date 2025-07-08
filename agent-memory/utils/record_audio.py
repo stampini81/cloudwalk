@@ -11,11 +11,13 @@ def record_audio(filename="output.wav"):
     """
     Grava áudio do microfone e salva em um arquivo WAV.
     A gravação para quando o usuário pressiona Enter.
+    Retorna None se a gravação for muito curta.
     """
     chunk = 1024
     sample_format = pyaudio.paInt16
     channels = 1
     fs = 44100
+    min_duration = 0.5  # Duração mínima em segundos
 
     p = pyaudio.PyAudio()
 
@@ -32,6 +34,7 @@ def record_audio(filename="output.wav"):
                     input=True)
 
     frames = []
+    start_time = None
 
     while True:
         # Check for stop condition based on OS
@@ -49,11 +52,24 @@ def record_audio(filename="output.wav"):
         data = stream.read(chunk)
         frames.append(data)
 
+        # Registra o tempo de início na primeira frame
+        if start_time is None:
+            import time
+            start_time = time.time()
+
     stream.stop_stream()
     stream.close()
     p.terminate()
 
     print("🔴 Gravação finalizada.")
+
+    # Verifica duração da gravação
+    if start_time is not None:
+        import time
+        duration = time.time() - start_time
+        if duration < min_duration:
+            print(f"⚠️ Gravação muito curta ({duration:.2f}s). Mínimo: {min_duration}s")
+            return None
 
     wf = wave.open(filename, 'wb')
     wf.setnchannels(channels)
