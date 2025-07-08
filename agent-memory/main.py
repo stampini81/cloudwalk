@@ -12,6 +12,10 @@ load_dotenv(find_dotenv())
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+print("🎤 Assistente de Memória Iniciado!")
+print("💡 Dica: Diga 'sair' ou 'quit' para encerrar a aplicação")
+print("-" * 50)
+
 while True:
     memory = {
         "events": [],
@@ -20,18 +24,41 @@ while True:
 
     filename_audio = record_audio()
 
-    audio_file = open(filename_audio, "rb")
-    transcription = client.audio.transcriptions.create(
-        model="whisper-1", 
-        file=audio_file,
-        language="pt"
-    )
+    with open(filename_audio, "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+            language="pt"
+        )
 
-    os.remove(filename_audio)
+    # Aguarda um pouco antes de tentar deletar o arquivo
+    import time
+    time.sleep(0.5)
 
-    text = transcription.text
+    try:
+        os.remove(filename_audio)
+    except PermissionError:
+        print(f"⚠️ Não foi possível deletar {filename_audio} - arquivo ainda em uso")
+        # Tenta deletar novamente após mais tempo
+        time.sleep(1)
+        try:
+            os.remove(filename_audio)
+        except PermissionError:
+            print(f"⚠️ Arquivo {filename_audio} não foi deletado automaticamente")
 
-    print(text)
+    text = transcription.text.lower().strip()
+
+    print(f"🎤 Você disse: {text}")
+
+    # Verificar se o usuário quer sair
+    if text in ["sair", "quit", "exit", "encerrar", "parar"]:
+        print("👋 Encerrando aplicação...")
+        print("💾 Salvando memória...")
+        with open("memory.json", "w") as f:
+            json.dump(memory, f)
+        print("✅ Memória salva com sucesso!")
+        print("👋 Até logo!")
+        break
 
     actual_date = datetime.now().strftime("%d/%m/%Y")
 
@@ -44,7 +71,7 @@ while True:
     ],
     tool_choice="auto",
     tools=[
-        base_model2tool(DailyEvents)
+        base_model2tool(DailyEvents)  # type: ignore
         ]
     )
 
