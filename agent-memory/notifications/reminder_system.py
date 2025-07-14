@@ -2,7 +2,8 @@ import threading
 import time
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-import sqlite3
+import mysql.connector
+from mysql.connector import Error
 import json
 
 # Try to import plyer, but don't fail if not available
@@ -14,13 +15,17 @@ except ImportError:
     print("⚠️ Plyer não disponível - notificações desabilitadas")
 
 class ReminderSystem:
-    def __init__(self, db_path: str = "memory.db"):
-        self.db_path = db_path
+    def __init__(self, host="localhost", user="root", password="", database="agent_memory"):
+        self.connection = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
         self.running = False
         self.reminder_thread: Optional[threading.Thread] = None
 
     def start(self) -> None:
-        """Inicia o sistema de lembretes em background"""
         if not self.running:
             self.running = True
             self.reminder_thread = threading.Thread(target=self._check_reminders, daemon=True)
@@ -28,95 +33,70 @@ class ReminderSystem:
             print("🔔 Sistema de lembretes iniciado!")
 
     def stop(self) -> None:
-        """Para o sistema de lembretes"""
         self.running = False
         if self.reminder_thread:
             self.reminder_thread.join()
         print("🔔 Sistema de lembretes parado!")
 
     def _check_reminders(self) -> None:
-        """Verifica lembretes em background"""
         while self.running:
             try:
                 self._process_reminders()
-                time.sleep(60)  # Verifica a cada minuto
+                time.sleep(60)
             except Exception as e:
                 print(f"Erro no sistema de lembretes: {e}")
                 time.sleep(60)
 
     def _process_reminders(self) -> None:
-        """Processa lembretes pendentes"""
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
-            # Busca lembretes que devem ser enviados
+            cursor = self.connection.cursor()
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute('''
-                SELECT r.id, r.message, e.title, e.time, e.date
+                SELECT r.id, r.event_id, r.reminder_time, r.message, r.is_sent, e.title, e.date, e.time
                 FROM reminders r
                 JOIN events e ON r.event_id = e.id
-                WHERE r.is_sent = FALSE AND r.reminder_time <= datetime('now')
-            ''')
-
+                WHERE r.is_sent = 0 AND r.reminder_time <= %s
+            ''', (now,))
             reminders = cursor.fetchall()
-
             for reminder in reminders:
-                reminder_id, message, title, event_time, event_date = reminder
-
-                # Envia notificação
-                self._send_notification(title, message, event_time, event_date)
-
+                reminder_id, event_id, reminder_time, message, is_sent, event_title, event_date, event_time = reminder
+                if PLYER_AVAILABLE:
+                    self._send_notification(event_title, message, event_time, event_date)
                 # Marca como enviado
-                cursor.execute('''
-                    UPDATE reminders SET is_sent = TRUE WHERE id = ?
-                ''', (reminder_id,))
-
-            conn.commit()
-            conn.close()
-
-        except Exception as e:
+                cursor.execute('UPDATE reminders SET is_sent = 1 WHERE id = %s', (str(reminder_id),))
+            self.connection.commit()
+        except Error as e:
             print(f"Erro ao processar lembretes: {e}")
 
-    def _send_notification(self, title: str, message: str, event_time: Optional[str], event_date: str) -> None:
-        """Envia notificação do sistema"""
-        try:
-            if not PLYER_AVAILABLE:
+    def _send_notification(self, title, message, event_time, event_date):
+        if PLYER_AVAILABLE:
+            try:
+                # Verifica se notification está disponível de forma mais robusta
+                import sys
+                notification_module = sys.modules.get('plyer.notification')
+                if notification_module and hasattr(notification_module, 'notify'):
+                    notification_module.notify(
+                        title=f"🔔 {title}",
+                        message=f"{message}\nData: {event_date} {event_time if event_time else ''}",
+                        timeout=10
+                    )
+                else:
+                    print(f"🔔 Lembrete: {title} - {message}")
+            except Exception as e:
+                print(f"Erro ao enviar notificação: {e}")
                 print(f"🔔 Lembrete: {title} - {message}")
-                return
-
-            notification_title = f"🔔 Lembrete: {title}"
-            notification_message = f"{message}\nData: {event_date}"
-            if event_time:
-                notification_message += f"\nHorário: {event_time}"
-
-            notification.notify(
-                title=notification_title,
-                message=notification_message,
-                app_icon=None,  # e.g. 'C:\\icon_32x32.ico'
-                timeout=10,  # seconds
-            )
-
-            print(f"🔔 Notificação enviada: {title}")
-
-        except Exception as e:
-            print(f"Erro ao enviar notificação: {e}")
+        else:
+            print(f"🔔 Lembrete: {title} - {message}")
 
     def create_reminder(self, event_id: int, reminder_time: str, message: str) -> None:
-        """Cria um novo lembrete"""
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
+            cursor = self.connection.cursor()
             cursor.execute('''
-                INSERT INTO reminders (event_id, reminder_time, message)
-                VALUES (?, ?, ?)
+                INSERT INTO reminders (event_id, reminder_time, message, is_sent)
+                VALUES (%s, %s, %s, 0)
             ''', (event_id, reminder_time, message))
-
-            conn.commit()
-            conn.close()
-            print(f"🔔 Lembrete criado para evento {event_id}")
-
-        except Exception as e:
+            self.connection.commit()
+        except Error as e:
             print(f"Erro ao criar lembrete: {e}")
 
     def parse_reminder_time(self, reminder_text: str, event_date: str, event_time: Optional[str] = None) -> str:

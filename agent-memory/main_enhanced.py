@@ -5,7 +5,8 @@ import os
 from utils.record_audio import record_audio
 from utils.basemodel2tool import base_model2tool
 from tools.daily_events import DailyEvents
-from database.database import DatabaseManager
+# Requer: pip install mysql-connector-python
+from database.database_mysql import DatabaseManager
 from notifications.reminder_system import ReminderSystem
 from identity.identity_manager import IdentityManager
 from datetime import datetime
